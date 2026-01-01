@@ -1,0 +1,52 @@
+# Streaming Camera Configuration
+# Real-time tracking from webcam/USB camera
+
+source:
+  source_type: camera
+  camera_id: 0  # Default camera (change to 1, 2, etc. for other cameras)
+  resized_wh: [512, 384]  # (W, H)
+  auto_rotate: true
+  skip_frames: 0  # Process every frame
+
+processing:
+  mode: global
+  max_points: 300  # Limit points for real-time performance
+
+model:
+  # Required. Download a checkpoint (see docs/MODEL_ZOO.md) and place it here,
+  # or override with `--ckpt_path ...`.
+  ckpt_path: null  # Required: specify via --ckpt_path or download from releases
+  # Faster cold-start by skipping DINOv3 hub weight loading.
+  fast_start: true
+  interp_shape: [512, 512]
+  dtype: fp16
+  device: cuda
+  use_amp: true
+  tracking_visibility_threshold: 0.1
+  matching_visibility_threshold: 0.5
+
+query:
+  strategy: grid
+  grid_size: 15  # Moderate density for real-time
+  initial_frame: 0
+  use_mask_filter: false
+
+visualization:
+  show_live: true
+  window_name: "Camera Tracking"
+  display_fps: true
+  display_info: true
+  record_output: false
+  linewidth: 2
+  point_radius: 3
+  tracks_leave_trace: 5
+  colormap: jet
+  alpha: 0.7
+
+output:
+  output_dir: "./outputs/streaming/camera"
+  save_video: false
+  save_npz: false
+
+max_duration: null  # Run indefinitely (press Q to quit)
+verbose: true

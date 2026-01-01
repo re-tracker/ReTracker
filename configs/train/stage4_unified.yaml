@@ -1,0 +1,326 @@
+trainer: &trainer_cfg
+  callbacks:
+    # set progress bar
+    - class_path: lightning.pytorch.callbacks.TQDMProgressBar
+      init_args:
+        refresh_rate: 1
+        process_position: 0
+    - class_path: retracker.training.callbacks.EMACallback
+      init_args:
+        decay: 0.999  # 如果震荡依然很大，可以尝试改到 0.9999
+        use_ema_for_validation: true
+    - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+      init_args:
+        monitor: epoch
+        verbose: true
+        save_top_k: 1
+        mode: max
+        save_last: true
+        filename: '{epoch}'
+        save_on_train_epoch_end: false
+    # - class_path: retracker.training.callbacks.ReduceBackboneLearningRateCallback
+    #   init_args:
+    #     backbone_lr_multiplier: 1
+    - class_path: retracker.training.callbacks.AllowedUncertaintyLossCallback
+      init_args:
+        from_epoch_n_on: 100
+        per_n_epoch: 3
+    - class_path: retracker.training.callbacks.LongSequenceModeCallback
+      init_args:
+        from_epoch_n_on: 100
+    - class_path: retracker.training.callbacks.SaveSharedCheckpointCallback
+    - class_path: retracker.training.callbacks.DumpModelParametersCallback
+      init_args:
+        per_n_step: 100
+    # - class_path: retracker.training.callbacks.PredOcclusionCallback
+    #   init_args:
+    #     from_epoch_n_on: 100
+
+    # - class_path: retracker.training.callbacks.MemoryUsageCallback
+    #   init_args:
+    #     print_every_n_steps: 10
+  precision: bf16-mixed # bf16-mixed has bug in matching training now
+
+  check_val_every_n_epoch: 1
+  num_sanity_val_steps: 10
+  # limit_train_batches: 0.2
+  # val_check_interval: 50
+  limit_val_batches: 0.1
+  # check_val_every_n_epoch: 99999
+  # limit_train_batches: 1.0
+  # limit_val_batches: 0.01
+
+data: &data_cfg
+  class_path: retracker.training.unified_data_module.UnifiedDataModule
+  init_args:
+    # ===== Unified Configuration =====
+    unified_config:
+      training_tasks:
+        # - matching
+        - tracking
+
+      # Task-level sampling ratios (optional)
+      # Controls the proportion of samples from each task type
+      # If both tasks are enabled, these ratios determine relative sampling weights
+      task_ratios:
+        matching: 1.0  # Weight for matching task
+        tracking: 1.0  # Weight for tracking task
+
+      # Shared DataLoader Parameters
+      batch_size: 2
+      num_workers: 2
+      pin_memory: true
+      n_samples_per_subset: 25
+      data_sampler: 'scene_balance'
+      seed: 66
+      subset_replacement: true
+      shuffle: true
+      repeat: 1
+
+    ###############
+    # Video/Tracking Configuration
+    ###############
+    video_config:
+      fixed_coarse_spvs_num: &fixed_token_num 1000
+      fixed_fine_queries_num: &fixed_fine_queries_num 500
+      trajs_sample_grid: 8
+
+      # Per-dataset sampling ratios (optional)
+      # Controls the proportion within tracking datasets
+      # Keys should match dataset names (case-insensitive)
+      dataset_ratios:
+        pointodyssey: 1.0
+        # pointodyssey: 0.5
+        # flyingthings: 0.3
+        # kubrics: 0.5
+        # cotracker3_kubric: 0.3
+
+      dataset:
+        dataset_name: 
+          # - flyingthings # flyingthings or kubrics
+          # - kubrics # flyingthings or kubrics
+          # - panning_movie # requires TensorFlow/TFDS (see retracker.data.datasets.kubric_movie)
+          - pointodyssey
+          # - k_epic
+          # - Cotracker3_Kubric
+
+        # All video dataset roots should be configured via configs/paths.yaml (or paths_local.yaml)
+        data_root: "${paths.DATA_ROOT}/flyingthings"
+        subset: all
+        use_augs: False
+        mode: 'videos' # [videos, images], return videos or a sequence of images
+        n_per_image: &fixed_queries_num 160
+
+        s: 24
+        s_frames: 8
+        crop_size: 
+          - 512 # h
+          - 512 # w
+        version: ad
+        occ_version: al
+        force_twice_vis: true
+        force_last_vis: false
+        force_all_inb: false
+        max_occ: 10
+
+        data_root_k: "${paths.DATA_ROOT}/panning_movie"
+        subset_k: train[:99%] # all 
+        use_augs_k: false
+        n_per_image_k: *fixed_queries_num
+        s_frames_k: 24
+        s_k: 24
+
+        data_root_e: "${paths.DATA_ROOT}/k_epic/train"
+        s_e: 24
+
+        data_root_c3k: "${paths.DATA_ROOT}/CoTracker3_Kubric/train"
+        S_c3k: 24
+        S_frames_c3k: 24
+        N_per_image_c3k: *fixed_queries_num
+
+        data_root_m: "${paths.DATA_ROOT}/kubrics"
+        subset_m: all # all 
+        use_augs_m: false
+        n_per_image_m: *fixed_queries_num
+        s_frames_m: 24
+        s_m: 24
+
+        data_root_p: "${paths.DATA_ROOT}/pointodyssey"
+        subset_p: sample
+        use_augs_p: False
+        n_per_image_p: *fixed_queries_num
+        s_p: 8
+        s_frames_p: 8
+
+    ###############
+    # Matching Configuration
+    ###############
+    matching_config:
+      fixed_coarse_spvs_num: *fixed_token_num
+      fixed_fine_queries_num: 500
+      trajs_sample_grid: 8
+
+      # Per-dataset sampling ratios (optional)
+      # Alternative to TRAIN_DATA_SAMPLE_RATIO below
+      # Keys should match dataset source names (case-insensitive)
+      # dataset_ratios:
+      #   megadepth: 1.0
+      #   scannet: 0.5
+
+      DATASET:
+        # Path variables are resolved from configs/paths.yaml (or paths_local.yaml)
+        # Copy configs/paths_local.yaml.example to configs/paths_local.yaml and customize
+        BASIC_PATH: &basic_path "${paths.DATA_ROOT}"
+        TRAIN_DATA_ROOT: *basic_path
+        TRAIN_DATA_SOURCE:
+          - 'MegaDepth'
+          # - 'ScanNet'
+
+        TRAIN_DATA_SAMPLE_RATIO:
+          - 0.1
+          # - 0.1
+
+        TRAIN_NPZ_ROOT:
+          - "${paths.MEGADEPTH_INDEX_ROOT}/scene_info_0.1_0.7"
+          # - "${paths.SCANNET_ROOT}/matching_indices_0.1_0.7_0.0/scene_info"
+
+        TRAIN_LIST_PATH:
+          - "${paths.MEGADEPTH_INDEX_ROOT}/trainvaltest_list/train_list.txt"
+          # - "${paths.SCANNET_ROOT}/matching_indices_0.1_0.7_0.0/train_list.txt"
+        TRAIN_INTRINSIC_PATH: null
+
+        #### VAL ####
+        VAL_DATA_SOURCE: 'ScanNet'
+        VAL_DATA_ROOT: *basic_path
+        VAL_NPZ_ROOT: "${paths.SCANNET_ROOT}/matching_indices_0.1_0.7_0.0/scene_info"
+        VAL_LIST_PATH: "${paths.SCANNET_ROOT}/matching_indices_0.1_0.7_0.0/val_list.txt"
+
+        VAL_INTRINSIC_PATH: null
+        FP16: false
+
+        TEST_DATA_SOURCE: 'MegaDepth'
+        TEST_DATA_ROOT: *basic_path
+        TEST_NPZ_ROOT: "${paths.MEGADEPTH_INDEX_ROOT}/scene_info_val_1500"
+        TEST_LIST_PATH: "${paths.MEGADEPTH_INDEX_ROOT}/trainvaltest_list/megadepth_test_1500.txt"
+        TEST_INTRINSIC_PATH: null
+
+        MIN_OVERLAP_SCORE_TRAIN: 0.1
+        MIN_OVERLAP_SCORE_TEST: 0.0
+        AUGMENTATION_TYPE: null
+
+        SCAN_IMG_RESIZEX: 512
+        SCAN_IMG_RESIZEY: 512
+
+        MGDPT_IMG_RESIZE: 
+          - 512  # for tracking DKM backbone
+          - 512 
+        MGDPT_IMG_PAD: true # True
+        MGDPT_DEPTH_PAD: true  # True
+        MGDPT_DF: 8 # 8
+        LOAD_ORIGIN_RGB: false # only for DKM which need rgb input
+        READ_GRAY: false
+        TEST_N_PAIRS: null
+
+      TRAINER:
+        # data sampler for train_dataloader
+        DATA_SAMPLER: scene_balance  # options: ['scene_balance', 'random', 'normal']
+        N_SAMPLES_PER_SUBSET: 5000
+        SB_SUBSET_SAMPLE_REPLACEMENT: True  # whether sample each scene with replacement or not
+        SB_SUBSET_SHUFFLE: True  # after sampling from scenes, whether shuffle within the epoch or not
+        SB_REPEAT: 1  # repeat N times for training the sampled data
+        AUC_METHOD: 'exact_auc'
+        # 'random' config
+        RDM_REPLACEMENT: True
+        RDM_NUM_SAMPLES: null
+        SEED: 42
+
+model: &model_cfg
+  # class_path: retracker.training.lightning_module.PL_ReTracker
+  automatic_optimization: true
+  # Pretrained checkpoint - set in paths.yaml or paths_local.yaml
+  # Use null to train from scratch
+  pretrained_ckpt: "${paths.PRETRAINED_CKPT}"
+
+  dump_dir: null
+    
+  config:
+
+    training_strategies:
+      use_kl_branch: false
+
+    # Shared model config (single source of truth).
+    retracker_config_file: configs/model/retracker.yaml
+    # Optional overrides merged on top of `retracker_config_file`.
+    retracker_config: {}
+
+    # training stages related
+    model_task_type: ${model.config.retracker_config.model_task_type} # image_matching / video_matching / video_tracking
+    fixed_coarse_spvs_num: ${model.config.retracker_config.fixed_coarse_spvs_num} # anchors + queries
+    queries_keypoints_num: ${model.config.retracker_config.queries_keypoints_num}
+
+    loss_config:
+      task_type: ${model.config.model_task_type}
+      sliding_wz: ${model.config.retracker_config.sliding_wz}
+      corr_num_levels: ${model.config.retracker_config.pips_refinement.corr_num_levels}
+      corr_radius: ${model.config.retracker_config.pips_refinement.corr_radius}
+      coarse_type: 'focal'
+      sparse_spvs: true
+      train_fine: ${model.config.retracker_config.train_fine}
+      multi_focal_loss:
+        alpha_class: 1.0
+        alpha_bin: 0.01
+        num_classes: 4096
+        gamma: 2.0
+      coarse_weight: 1.0
+      focal_alpha: 0.25
+      focal_gamma: 2.0
+      pos_weight: 1.0
+      neg_weight: 1.0
+      fine_type: 'l2_with_std'
+      fine_weight: 1.0
+      matching_fine_weight: 0.05
+      wo_safe_mask: false
+      fine_correct_thr: 5
+
+      compute_flow_loss: true
+      flow_loss_weights: 0.05
+      
+      video_loss_thresh: 256
+      kl_weight: 0.1
+
+    optimizer_config:
+      # class_path: torch.optim.AdamW
+      name: adamw
+      lr: 0.0002
+      betas: [0.9, 0.999]
+      eps: 1e-7 # fp16
+      fused: true
+      grad_clip: 0.5
+      weight_decay: 0.01
+      warmup_type: linear # [linear, constant]
+      warmup_ratio: 0.0
+      warmup_step: 400
+      amsgrad: false
+      # scheduler settings
+      scheduler: ExponentialLR # [multisteplr, cosineannealing, exponentiallr]
+      scheduler_interval: step
+      mslr_milestones: [3, 6, 9, 12]
+      mslr_gamma: 0.5
+      cosa_tmax: 30  # cosa: cosineannealing
+      elr_gamma: 0.99994  # elr: exponentiallr, this value for 'step' interval
+
+    eval_config:
+      EPI_ERR_THR: 0.0001
+      EVAL_TIMES: 1
+      THRESHOLDS: [5, 10, 20]
+      AUC_METHOD: 'exact_auc'
+
+    viz_config:
+      plot_flow: true
+      enable_plotting: true
+      n_valpairs_to_plot: 1
+      video_plot_interval: 30
+      video_plot_interval_eval: 20
+      matches_plot_interval: 50
+      matches_plot_interval_eval: 10
+      plot_mode: 'evaluation'

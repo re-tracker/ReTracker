@@ -1,0 +1,104 @@
+# -----------------------------------------------------------------------------
+# Editor / OS
+# -----------------------------------------------------------------------------
+.DS_Store
+*.swp
+*.swo
+*.tmp
+*.lnk
+.vscode/
+.idea/
+
+# -----------------------------------------------------------------------------
+# Python bytecode / caches
+# -----------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# -----------------------------------------------------------------------------
+# Python tooling caches / reports
+# -----------------------------------------------------------------------------
+.ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.pyre/
+.pytype/
+.hypothesis/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+
+# -----------------------------------------------------------------------------
+# Build / packaging
+# -----------------------------------------------------------------------------
+build/
+dist/
+*.egg-info/
+.eggs/
+*.egg
+MANIFEST
+
+# -----------------------------------------------------------------------------
+# Virtual environments
+# -----------------------------------------------------------------------------
+.env
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# -----------------------------------------------------------------------------
+# Project-local configuration
+# -----------------------------------------------------------------------------
+# Machine-specific path configuration (copy from paths_local.yaml.example)
+configs/paths_local.yaml
+
+# -----------------------------------------------------------------------------
+# Local artifacts (datasets, weights, outputs, logs)
+# -----------------------------------------------------------------------------
+# These are local-only and should not be committed. In some environments they
+# may be symlinks, so we use the `*` suffix to ignore both dirs and symlinks.
+/data/
+/data_nas1*
+/weights*
+/outputs*
+/logs*
+/checkpoints/
+
+# Some tools accidentally write logs under a literal "None/" directory.
+/None/
+
+scratch/
+notebooks/
+test_env/
+slam_output/
+dump/
+console
+annot.npz
+
+# -----------------------------------------------------------------------------
+# Experiments
+# -----------------------------------------------------------------------------
+# Local scratch tools: keep convention files tracked.
+experiments/tools/*
+!experiments/tools/README.md
+!experiments/tools/.gitignore
+
+# Benchmarks: downloaded checkpoints / cloned repos are local.
+experiments/benchmark/checkpoints/**
+experiments/benchmark/scripts/libjitprofiling_stub.so
+experiments/third_party/**
+
+# -----------------------------------------------------------------------------
+# Local development files
+# -----------------------------------------------------------------------------
+# All local-only files (design docs, notes, agent configs, etc.) go here.
+local/
+*.test.txt

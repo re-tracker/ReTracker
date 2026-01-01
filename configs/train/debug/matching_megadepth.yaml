@@ -1,0 +1,64 @@
+# MegaDepth matching-only training (debug-friendly).
+#
+# Usage:
+#   conda activate retracker_env
+#   bash scripts/train/train.sh stage4 debug_megadepth_matching \
+#     --exp_config configs/train/debug/matching_megadepth.yaml
+#
+# Notes:
+# - Dataset paths are resolved via configs/paths.yaml + configs/paths_local.yaml.
+# - Set `paths.DATA_ROOT` / `paths.MEGADEPTH_INDEX_ROOT` in `configs/paths_local.yaml`
+#   if your MegaDepth lives outside the repo-local `data/` folder.
+
+data:
+  init_args:
+    unified_config:
+      # Only train matching (no video tracking).
+      training_tasks:
+        - matching
+      # Matching uses heavy per-pair supervision + refinement; keep batch size small
+      # for debug runs and to avoid multi-batch shape edge cases.
+      batch_size: 1
+
+    matching_config:
+      # Force MegaDepth for matching.
+      DATASET:
+        TRAIN_DATA_SOURCE:
+          - MegaDepth
+        # Use a tiny debug split by default.
+        TRAIN_LIST_PATH:
+          - "${paths.MEGADEPTH_INDEX_ROOT}/trainvaltest_list/train_debug_list.txt"
+        # Keep validation/test on MegaDepth as well.
+        #
+        # NOTE: stage4_unified.yaml defaults VAL_* to ScanNet. If you switch
+        # VAL_DATA_SOURCE to MegaDepth you must also update VAL_* paths, or the
+        # builder will still try to read ScanNet lists/npz roots.
+        VAL_DATA_SOURCE: MegaDepth
+        VAL_DATA_ROOT: "${paths.DATA_ROOT}"
+        VAL_NPZ_ROOT: "${paths.MEGADEPTH_INDEX_ROOT}/scene_info_val_1500"
+        VAL_LIST_PATH: "${paths.MEGADEPTH_INDEX_ROOT}/trainvaltest_list/val_list.txt"
+
+        TEST_DATA_SOURCE: MegaDepth
+        TEST_DATA_ROOT: "${paths.DATA_ROOT}"
+        TEST_NPZ_ROOT: "${paths.MEGADEPTH_INDEX_ROOT}/scene_info_val_1500"
+        TEST_LIST_PATH: "${paths.MEGADEPTH_INDEX_ROOT}/trainvaltest_list/test_list.txt"
+
+model:
+  config:
+    retracker_config:
+      # MegaDepth is image-pair matching, not video tracking.
+      model_task_type: image_matching
+      # Keep coarse/fine query counts consistent for matching.
+      fixed_coarse_spvs_num: 100
+      fixed_fine_queries_num: 100
+      queries_keypoints_num: 100
+
+trainer:
+  # Disable sanity validation for this debug config (matching validation can be
+  # expensive and is not needed for a quick smoke run).
+  num_sanity_val_steps: 0
+  limit_val_batches: 0
+  # Matching has known stability issues with bf16 in some setups; keep it safe.
+  precision: 32
+  # Requested smoke/debug run length.
+  max_steps: 10

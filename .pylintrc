@@ -1,0 +1,69 @@
+# ============================================================================
+# Pylint Configuration for ReTracker
+# ============================================================================
+
+[MAIN]
+fail-under=8.0
+ignore=.git,__pycache__,build,dist,*.egg-info,venv,.venv
+jobs=0
+persistent=yes
+py-version=3.10
+ignore-patterns=test_.*\.py,conftest\.py
+
+[MESSAGES CONTROL]
+disable=
+    missing-module-docstring,
+    missing-class-docstring,
+    missing-function-docstring,
+    too-few-public-methods,
+    too-many-arguments,
+    too-many-instance-attributes,
+    too-many-locals,
+    too-many-branches,
+    too-many-statements,
+    line-too-long,
+    invalid-name,
+    no-member,
+    not-callable,
+    import-error,
+    no-name-in-module,
+    duplicate-code,
+    fixme,
+    W0511,
+    R0801,
+    C0103,
+    C0114,
+    C0115,
+    C0116
+
+[FORMAT]
+max-line-length=120
+max-module-lines=2000
+indent-string='    '
+
+[BASIC]
+good-names=i,j,k,ex,_,x,y,z,t,b,c,h,w,n,d,f,B,C,H,W,N,D,T,F,lr,gt
+argument-naming-style=snake_case
+variable-naming-style=snake_case
+function-naming-style=snake_case
+method-naming-style=snake_case
+module-naming-style=snake_case
+
+[DESIGN]
+max-args=15
+max-attributes=30
+max-public-methods=30
+max-returns=10
+max-branches=20
+max-statements=100
+
+[SIMILARITIES]
+min-similarity-lines=10
+ignore-imports=yes
+
+[IMPORTS]
+allow-wildcard-with-all=yes
+
+[TYPECHECK]
+ignored-modules=torch,torchvision,cv2,numpy,scipy,kornia,einops
+ignored-classes=torch.Tensor,numpy.ndarray

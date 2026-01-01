@@ -1,0 +1,57 @@
+# =============================================================================
+# Local Path Configuration (Example)
+# =============================================================================
+# Copy this file to `configs/paths_local.yaml` and edit it for your machine.
+# `configs/paths_local.yaml` is gitignored and should NOT be committed.
+#
+# Usage:
+#   cp configs/paths_local.yaml.example configs/paths_local.yaml
+#   $EDITOR configs/paths_local.yaml
+#
+# Notes:
+# - `configs/paths.yaml` provides repo-local defaults that work for smoke tests.
+# - For real training, you almost certainly want to point DATA_ROOT / SCANNET_ROOT
+#   / MEGADEPTH_INDEX_ROOT to your dataset storage.
+# =============================================================================
+
+paths:
+  # ===== Data Directories =====
+  # Root directory containing training datasets (MegaDepth, ScanNet, etc.)
+  DATA_ROOT: "/path/to/datasets"
+  # Optional alternative root (e.g., another mount or SSD cache)
+  DATA_ROOT_ALT: "${paths.DATA_ROOT}"
+
+  # Dataset-specific roots (override if your layout differs)
+  MEGADEPTH_INDEX_ROOT: "${paths.DATA_ROOT}/megadepth/indexs/megadepth_indices"
+  SCANNET_ROOT: "${paths.DATA_ROOT}/scannet_plus"
+  VIDEO_DATA_ROOT: "${paths.DATA_ROOT}"
+
+  # ===== Model Weights =====
+  # Keep repo-local weights by default, or point to a shared weights directory.
+  WEIGHTS_ROOT: "weights"
+
+  # DINOv3 weights and repo for torch.hub
+  # - If you want fully offline runs, point DINOV3_REPO at a local clone or at an existing
+  #   torch.hub cache checkout (e.g. ~/.cache/torch/hub/facebookresearch_dinov3_main).
+  # - Place the pretrain weights under WEIGHTS_ROOT (or point to an absolute path).
+  # - For auto-download, set:
+  #   DINOV3_WEIGHTS: null
+  #   DINOV3_REPO: "auto"
+  DINOV3_REPO: "${oc.env:HOME}/.cache/torch/hub/facebookresearch_dinov3_main"
+  DINOV3_WEIGHTS: "${paths.WEIGHTS_ROOT}/dinov3_vitl16_pretrain_lvd1689m-8aa4cbdd.pth"
+
+  # Pretrained ReTracker checkpoint (optional, null to train from scratch)
+  PRETRAINED_CKPT: null
+
+  # ===== Output Directories =====
+  OUTPUTS_ROOT: "./outputs"
+
+  # ===== Evaluation / Inference Data =====
+  # For smoke tests we ship a tiny TAP-Vid DAVIS subset under `data/tapvid_local/`.
+  # For the full TAP-Vid datasets, override TAPVID_ROOT to point at your dataset storage.
+  EVAL_DATA_ROOT: "${paths.DATA_ROOT}"
+  TAPVID_ROOT: "${paths.EVAL_DATA_ROOT}/tapvid_local"
+
+  # Convenience output roots (optional)
+  TRAIN_OUTPUTS_ROOT: "${paths.OUTPUTS_ROOT}/training"
+  EVAL_OUTPUTS_ROOT: "${paths.OUTPUTS_ROOT}/eval"

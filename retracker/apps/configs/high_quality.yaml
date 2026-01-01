@@ -1,0 +1,44 @@
+# High quality configuration for best results
+
+video_path: null  # Specify via command line
+seg_path: null
+
+video:
+  resized_wh: [1024, 768]
+  auto_rotate: true
+  max_frames: null
+  backend: opencv
+
+model:
+  # Required. Download a checkpoint (see docs/MODEL_ZOO.md) and place it here,
+  # or override with `--ckpt_path ...`.
+  ckpt_path: null  # Required: specify via --ckpt_path or download from releases
+  # Faster cold-start by skipping DINOv3 hub weight loading. Safe when using a
+  # full checkpoint that includes backbone weights.
+  fast_start: false
+  interp_shape: [512, 512]
+  dtype: fp32  # Higher precision
+  device: cuda
+  use_amp: false
+  tracking_visibility_threshold: 0.1
+  matching_visibility_threshold: 0.5
+
+query:
+  strategy: grid
+  grid_size: 30  # Dense grid
+  initial_frame: 0
+  use_mask_filter: true
+  margin_ratio: 0.015625
+
+visualization:
+  fps: 10
+  linewidth: 4
+  tracks_leave_trace: 1
+  hide_occ_points: true
+  colormap: jet
+
+output:
+  output_dir: "./outputs/high_quality"
+  save_video: true
+  save_npz: true
+  save_images: false

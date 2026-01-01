@@ -1,0 +1,69 @@
+trainer:
+  check_val_every_n_epoch: 300
+  num_sanity_val_steps: 1
+  precision: bf16-mixed # bf16-mixed has bug in matching training now
+
+data:
+  init_args:
+    unified_config:
+      training_tasks:
+        - matching
+        - tracking
+
+    video_config:
+      dataset:
+        n_per_image: &fixed_queries_num 1000
+        fixed_fine_queries_num: &fixed_fine_queries_num 100
+        n_per_image_k: *fixed_queries_num
+        n_per_image_m: *fixed_queries_num
+        n_per_image_p: *fixed_queries_num
+        s_p: 4
+        s_frames_p: 4
+
+        dataset_name: 
+          # - flyingthings # flyingthings or kubrics
+          # - kubrics # flyingthings or kubrics
+          # - panning_movie # flyingthings or kubrics
+          - pointodyssey # flyingthings or kubrics
+          # - k_epic
+          # - Cotracker3_Kubric
+
+
+
+    matching_config:
+      DATASET:
+          # Path variables are resolved from configs/paths.yaml (or paths_local.yaml)
+          BASIC_PATH: &basic_path "${paths.DATA_ROOT}"
+          TRAIN_DATA_ROOT: *basic_path
+          VAL_DATA_ROOT: *basic_path
+          TEST_DATA_ROOT: *basic_path
+
+          TRAIN_LIST_PATH:
+            - "${paths.DATA_ROOT_ALT}/megadepth/indexs/megadepth_indices/trainvaltest_list/train_debug_list.txt"
+          TRAIN_NPZ_ROOT:
+            - "${paths.MEGADEPTH_INDEX_ROOT}/scene_info_0.1_0.7"
+          VAL_NPZ_ROOT: "${paths.MEGADEPTH_INDEX_ROOT}/scene_info_val_1500"
+          VAL_LIST_PATH: "${paths.MEGADEPTH_INDEX_ROOT}/trainvaltest_list/megadepth_test_1500.txt"
+          TEST_NPZ_ROOT: "${paths.MEGADEPTH_INDEX_ROOT}/scene_info_val_1500"
+          TEST_LIST_PATH: "${paths.MEGADEPTH_INDEX_ROOT}/trainvaltest_list/megadepth_test_1500.txt"
+
+
+model:
+  # Pretrained checkpoint - set in paths.yaml or paths_local.yaml (use null to train from scratch)
+  pretrained_ckpt: "${paths.PRETRAINED_CKPT}"
+  config:
+    queries_keypoints_num: *fixed_fine_queries_num # 512 for fine training
+    retracker_config:
+      train_fine: &train_fine true
+      fixed_coarse_spvs_num: 200 # keep consistent with model.config.fixed_coarse_spvs_num
+      fixed_fine_queries_num: *fixed_fine_queries_num # 512 for fine training
+      queries_keypoints_num: *fixed_fine_queries_num # 512 for fine training
+      # Debug parameters for distributed training verification
+      debug_mode: true
+      debug_batches: 5
+      
+    fixed_coarse_spvs_num: &fixed_token_num 200 # anchors + queries
+    loss_config:
+      train_fine: *train_fine
+    viz_config:
+      plot_flow: false

@@ -1,0 +1,32 @@
+# Default evaluation output root. Can be overridden per-run.
+exp_dir: "${paths.EVAL_OUTPUTS_ROOT}"
+dataset_name: "tapvid_davis_first"
+# Default evaluation dataset root (TAP-Vid). Can be overridden per-run.
+dataset_root: "${paths.TAPVID_ROOT}"
+method_name: "retracker"
+checkpoint: null
+seed: 0
+gpu_idx: 0
+interp_shape: [512, 512]
+enable_highres_inference: false
+coarse_resolution: [512, 512]
+tapvid_resize_to: [256, 256]
+
+# Multi-GPU / multi-process sharding (sequence-level parallelism).
+shard_id: 0
+num_shards: 1
+
+# Caching / resume.
+load_dump: true
+save_dump: false
+skip_if_done: false
+
+# Visualization.
+visualize_every: 1
+save_video: true
+
+# DataLoader.
+num_workers: 14
+
+# Quick smoke test.
+fast_eval: false

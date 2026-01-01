@@ -1,0 +1,27 @@
+{
+    "useLibraryCodeForTypes": true,
+    "reportMissingImports": "error",
+    "pythonPlatform": "Linux",
+    "pythonVersion": "3.8",
+    "include": [
+      "retracker"
+    ],
+
+    "exclude": [
+      "**/node_modules",
+      "**/__pycache__",
+      "**/venv",
+      "**/.venv",
+      "**/data",
+      "**/logs",
+      "**/checkpoints",
+      "**/outputs"
+    ],
+ 
+   "typeCheckingMode": "basic",
+   "reportUnknownMemberType": false,
+   "reportUnknownParameterType": false,
+   "reportUnknownArgumentType": false,
+   "reportUnknownVariableType": false,
+   "reportUnknownLambdaType": false
+}

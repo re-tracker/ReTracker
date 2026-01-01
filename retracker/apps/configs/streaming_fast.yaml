@@ -1,0 +1,52 @@
+# Fast Streaming Configuration
+# Optimized for maximum speed with reduced quality
+
+source:
+  source_type: camera
+  camera_id: 0
+  resized_wh: [256, 192]  # Smaller resolution for speed
+  auto_rotate: true
+  skip_frames: 1  # Skip every other frame
+
+processing:
+  mode: global
+  max_points: 100  # Fewer points
+
+model:
+  # Required. Download a checkpoint (see docs/MODEL_ZOO.md) and place it here,
+  # or override with `--ckpt_path ...`.
+  ckpt_path: null  # Required: specify via --ckpt_path or download from releases
+  # Faster cold-start by skipping DINOv3 hub weight loading.
+  fast_start: true
+  interp_shape: [512, 512]
+  dtype: fp16
+  device: cuda
+  use_amp: true
+  tracking_visibility_threshold: 0.1
+  matching_visibility_threshold: 0.5
+
+query:
+  strategy: grid
+  grid_size: 10  # Sparse grid
+  initial_frame: 0
+  use_mask_filter: false
+
+visualization:
+  show_live: true
+  window_name: "Fast Streaming"
+  display_fps: true
+  display_info: true
+  record_output: false
+  linewidth: 1
+  point_radius: 2
+  tracks_leave_trace: 3
+  colormap: jet
+  alpha: 0.7
+
+output:
+  output_dir: "./outputs/streaming/fast"
+  save_video: false
+  save_npz: false
+
+max_duration: null
+verbose: true

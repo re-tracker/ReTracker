@@ -1,0 +1,55 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite our paper."
+title: "ReTracker"
+type: software
+version: "0.1.0"
+authors:
+  - family-names: Tan
+    given-names: Dongli
+  - family-names: He
+    given-names: Xingyi
+  - family-names: Peng
+    given-names: Sida
+  - family-names: Gong
+    given-names: Yiqing
+  - family-names: Zhu
+    given-names: Xing
+  - family-names: Sun
+    given-names: Jiaming
+  - family-names: Hu
+    given-names: Ruizhen
+  - family-names: Shen
+    given-names: Yujun
+  - family-names: Bao
+    given-names: Hujun
+  - family-names: Zhou
+    given-names: Xiaowei
+preferred-citation:
+  type: conference-paper
+  title: "ReTracker: Exploring Image Matching for Robust Online Any Point Tracking"
+  authors:
+    - family-names: Tan
+      given-names: Dongli
+    - family-names: He
+      given-names: Xingyi
+    - family-names: Peng
+      given-names: Sida
+    - family-names: Gong
+      given-names: Yiqing
+    - family-names: Zhu
+      given-names: Xing
+    - family-names: Sun
+      given-names: Jiaming
+    - family-names: Hu
+      given-names: Ruizhen
+    - family-names: Shen
+      given-names: Yujun
+    - family-names: Bao
+      given-names: Hujun
+    - family-names: Zhou
+      given-names: Xiaowei
+  booktitle: "Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV)"
+  year: 2025
+  month: October
+  pages: "4306-4316"
+  url: "https://openaccess.thecvf.com/content/ICCV2025/html/Tan_ReTracker_Exploring_Image_Matching_for_Robust_Online_Any_Point_Tracking_ICCV_2025_paper.html"

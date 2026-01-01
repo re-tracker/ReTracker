@@ -1,0 +1,264 @@
+# ============================================================================
+# pyproject.toml - ReTracker Project Configuration
+# Compatible with: uv, pip, setuptools
+# Reference: https://github.com/facebookresearch/co-tracker
+# ============================================================================
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "retracker"
+version = "0.1.0"
+description = "ReTracker: A unified framework for point tracking and image matching"
+readme = "README.md"
+license = { text = "Apache-2.0" }
+authors = [
+    { name = "Dongli Tan" }
+]
+maintainers = [
+    { name = "Dongli Tan" }
+]
+keywords = [
+    "deep-learning",
+    "computer-vision",
+    "point-tracking",
+    "video-tracking",
+    "image-matching",
+    "pytorch",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+requires-python = ">=3.10"
+
+# ============================================================================
+# Core Dependencies
+# ============================================================================
+dependencies = [
+    # Core ML/DL
+    "torch>=2.1.0",
+    "torchvision>=0.16.0",
+
+    # Scientific computing
+    "numpy>=1.24.0,<2.0.0",
+    "scipy>=1.11.0",
+    "einops>=0.3.0",
+
+    # Computer vision
+    "opencv-python>=4.8.0",
+    "kornia>=0.7.0",
+    "pillow>=10.0.0",
+
+    # Config
+    "omegaconf>=2.3.0",
+
+    # Logging / UX
+    "rich>=13.0.0",
+    "tqdm>=4.65.0",
+
+    # Utilities
+    "joblib>=1.3.0",
+    "yacs>=0.1.8",
+]
+
+# ============================================================================
+# Optional Dependencies
+# ============================================================================
+[project.optional-dependencies]
+# Training dependencies
+train = [
+    "lightning>=2.2.0",
+    "tensorboard>=2.14.0",
+    "hydra-core>=1.3.0",
+    "jsonargparse[signatures]>=4.26.0",
+    "albumentations>=0.5.0",
+    "h5py>=3.9.0",
+    "matplotlib>=3.7.0",
+    "wandb>=0.16.0",
+]
+
+# Evaluation dependencies (Hydra CLI only; avoids pulling Lightning).
+eval = [
+    "hydra-core>=1.3.0",
+    "matplotlib>=3.7.0",
+    "imageio[ffmpeg]>=2.31.0",
+]
+
+# Development dependencies
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-xdist>=3.3.0",
+    "mypy>=1.5.0",
+    "ruff>=0.1.0",
+    "pre-commit>=3.4.0",
+    "tomli>=2.0.0; python_version < '3.11'",
+    "ipython>=8.15.0",
+    "ipdb>=0.13.0",
+    "autopep8>=2.0.0",
+    "pylint>=3.0.0",
+]
+
+# Documentation dependencies
+docs = [
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.4.0",
+    "mkdocstrings[python]>=0.23.0",
+]
+
+# Apps (installable runnable pipelines) dependencies
+apps = [
+    "gradio>=4.0.0",
+    "mediapy>=1.1.0",
+    "imageio[ffmpeg]>=2.31.0",
+]
+
+# Full installation
+all = [
+    "retracker[train,eval,dev,docs,apps]",
+]
+
+# ============================================================================
+# Entry Points (CLI Commands)
+# ============================================================================
+[project.scripts]
+# Main unified CLI (preferred)
+retracker = "retracker.cli.main:main"
+
+# ============================================================================
+# URLs
+# ============================================================================
+[project.urls]
+Homepage = "https://github.com/re-tracker/ReTracker"
+Documentation = "https://github.com/re-tracker/ReTracker/tree/main/docs"
+Repository = "https://github.com/re-tracker/ReTracker"
+Issues = "https://github.com/re-tracker/ReTracker/issues"
+
+# ============================================================================
+# Build Configuration
+# ============================================================================
+[tool.hatch.build.targets.wheel]
+packages = ["retracker"]
+
+# Ensure non-Python package data needed at runtime is shipped in wheels.
+include = [
+    "retracker/configs/*.yaml",
+    "retracker/apps/configs/*.yaml",
+]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/retracker",
+    "/configs",
+    "/scripts",
+    "/tests",
+    "/docs",
+    "/README.md",
+    "/LICENSE",
+    "/CHANGELOG.md",
+    "/CITATION.cff",
+]
+
+# ============================================================================
+# Ruff Configuration (Modern Python Linter & Formatter)
+# ============================================================================
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+indent-width = 4
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # Pyflakes
+    "I",      # isort
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "UP",     # pyupgrade
+]
+ignore = [
+    "E501",   # line too long (handled by formatter)
+    "B008",   # do not perform function calls in argument defaults
+    "B905",   # zip without explicit strict
+    "C901",   # too complex
+    "W191",   # indentation contains tabs
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401", "F403"]  # unused imports in __init__
+"tests/**" = ["ARG"]              # unused arguments in tests
+
+[tool.ruff.lint.isort]
+known-first-party = ["retracker"]
+force-single-line = false
+lines-after-imports = 2
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+# ============================================================================
+# MyPy Configuration (Type Checking)
+# ============================================================================
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = false
+warn_unused_configs = true
+ignore_missing_imports = true
+exclude = [
+    "build/",
+    "dist/",
+    "venv/",
+]
+
+# ============================================================================
+# Pytest Configuration
+# ============================================================================
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-v",
+    "--tb=short",
+    "-ra",
+    "--color=yes",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::UserWarning",
+]
+markers = [
+    "slow: marks tests as slow",
+    "gpu: marks tests that require GPU",
+]
+
+# ============================================================================
+# Coverage Configuration
+# ============================================================================
+[tool.coverage.run]
+source = ["retracker"]
+omit = [
+    "*/tests/*",
+    "*/__pycache__/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]

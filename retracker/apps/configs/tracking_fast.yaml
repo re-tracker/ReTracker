@@ -1,0 +1,40 @@
+# Fast configuration for quick testing
+
+video_path: null  # Specify via command line
+
+video:
+  resized_wh: [256, 192]
+  auto_rotate: true
+  max_frames: 50  # Limit to 50 frames
+  backend: auto
+
+model:
+  # Required. Download a checkpoint (see docs/MODEL_ZOO.md) and place it here,
+  # or override with `--ckpt_path ...`.
+  ckpt_path: null  # Required: specify via --ckpt_path or download from releases
+  # Faster cold-start by skipping DINOv3 hub weight loading.
+  fast_start: true
+  interp_shape: [512, 512]
+  dtype: fp16
+  device: cuda
+  use_amp: true
+  tracking_visibility_threshold: 0.1
+  matching_visibility_threshold: 0.5
+
+query:
+  strategy: grid
+  grid_size: 10  # Fewer points for speed
+  initial_frame: 0
+  use_mask_filter: false
+
+visualization:
+  fps: 15
+  linewidth: 2
+  tracks_leave_trace: 1
+  hide_occ_points: true
+
+output:
+  output_dir: "./outputs/fast"
+  save_video: true
+  save_npz: false
+  save_images: false

@@ -1,0 +1,30 @@
+# Smoke-test overrides for Stage4 training.
+#
+# Usage:
+#   python -m retracker train fit \
+#     --defaults_config configs/train/stage4_unified.yaml \
+#     --exp_config configs/train/smoke/stage4_dummy.yaml \
+#     --trainer.fast_dev_run=1
+#
+# This config avoids any external datasets by using the synthetic "dummy" dataset.
+
+trainer:
+  # Make training launchable in a fresh environment (1 train + 1 val batch).
+  fast_dev_run: true
+
+data:
+  init_args:
+    unified_config:
+      batch_size: 1
+      num_workers: 0
+      pin_memory: false
+      n_samples_per_subset: 1
+      shuffle: false
+
+    video_config:
+      dataset:
+        dataset_name: dummy
+        crop_size: [64, 64]
+        n_per_image: 32
+        s: 4
+        s_frames: 4

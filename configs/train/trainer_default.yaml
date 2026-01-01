@@ -1,0 +1,85 @@
+callbacks:
+  # set progress bar
+  - class_path: lightning.pytorch.callbacks.TQDMProgressBar
+    init_args:
+      refresh_rate: 1
+      process_position: 0
+  - class_path: retracker.training.callbacks.EMACallback
+    init_args:
+      decay: 0.999  # 如果震荡依然很大，可以尝试改到 0.9999
+      use_ema_for_validation: true
+  - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+    init_args:
+      monitor: epoch
+      verbose: true
+      save_top_k: 3
+      mode: max
+      save_last: true
+      filename: '{epoch}'
+      save_on_train_epoch_end: false
+  - class_path: retracker.training.callbacks.ReduceBackboneLearningRateCallback
+    init_args:
+      backbone_lr_multiplier: 1
+  # - class_path: retracker.training.callbacks.AllowedUncertaintyLossCallback
+  #   init_args:
+  #     per_n_epoch: 3
+  - class_path: retracker.training.callbacks.LongSequenceModeCallback
+    init_args:
+      from_epoch_n_on: 100
+  - class_path: retracker.training.callbacks.SaveSharedCheckpointCallback
+  # - class_path: retracker.training.callbacks.DumpModelParametersCallback
+  #   init_args:
+  #     per_n_step: 100
+  # - class_path: retracker.training.callbacks.PredOcclusionCallback
+  #   init_args:
+  #     from_epoch_n_on: 100
+
+strategy:
+  class_path: lightning.pytorch.strategies.DDPStrategy
+  init_args:
+    find_unused_parameters: True
+devices: auto
+num_nodes: 1
+precision: 32 #bf16-mixed
+logger: 
+  class_path: lightning.pytorch.loggers.tensorboard.TensorBoardLogger
+  init_args:
+    save_dir: "${paths.TRAIN_OUTPUTS_ROOT}/cli_logs/code_version_info"
+    name: null
+    version: null
+    # log_graph: false
+    # default_hp_metric: true
+    # publish_model: false
+    # filename_suffix: null
+fast_dev_run: false
+max_epochs: -1
+min_epochs: null
+max_steps: -1
+min_steps: null
+max_time: null
+limit_train_batches: null
+limit_val_batches: 1.
+limit_test_batches: null
+limit_predict_batches: null
+overfit_batches: 0.0
+val_check_interval: null
+check_val_every_n_epoch: 1
+num_sanity_val_steps: 10
+log_every_n_steps: 15
+enable_checkpointing: null
+enable_progress_bar: null
+enable_model_summary: null
+accumulate_grad_batches: 1
+# gradient_clip_val: 0.5
+gradient_clip_algorithm: null
+deterministic: null
+benchmark: True
+inference_mode: true
+use_distributed_sampler: false
+profiler:
+  class_path: lightning.pytorch.profilers.base.PassThroughProfiler
+detect_anomaly: false
+barebones: false
+sync_batchnorm: false
+reload_dataloaders_every_n_epochs: 100
+default_root_dir: null

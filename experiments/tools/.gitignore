@@ -1,0 +1,9 @@
+# Local experiment tools (not part of the library).
+#
+# Policy:
+# - Keep the directory present in git.
+# - Ignore all local scripts/assets by default.
+# - Allow README/.gitignore so contributors understand the convention.
+*
+!.gitignore
+!README.md

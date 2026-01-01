@@ -1,0 +1,8 @@
+name: retracker_env
+channels:
+  - conda-forge
+dependencies:
+  # Keep this environment minimal and install PyTorch separately (CPU or CUDA)
+  # according to your machine. See README.md for recommended commands.
+  - python=3.10
+  - pip

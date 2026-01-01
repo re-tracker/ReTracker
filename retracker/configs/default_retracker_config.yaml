@@ -1,0 +1,260 @@
+debug_mode: false
+debug_batches: 5
+use_temporal_dino: true
+model_task_type: causal_video_matching
+fixed_coarse_spvs_num: 1000
+fixed_fine_queries_num: 500
+queries_keypoints_num: 500
+train_coarse: true
+train_fine: true
+use_jitter_aug: false
+use_matching_prior: true
+dino_version: v3
+backbone_type: DINOv3
+cnn_fusion_type: vitconvnext
+resolution:
+- 8
+- 2
+dino_coarse_window_size: 5
+coarse_window_size: 5
+fine_window_size: 5
+fine_concat_coarse_feat: true
+use_dino_only: true
+use_dino: false
+use_coarse: false
+coarse_init_method: padding
+sliding_wz: 8
+conf_matrix_gt_dino_scale: 16
+conf_matrix_gt_scale: 8
+chn_d: 384
+chn_c: 256
+chn_f: 128
+resnetfpn:
+  initial_dim: 128
+  block_dims:
+  - 128
+  - 196
+  - 256
+dino:
+  repo_dir: null
+  github_repo: facebookresearch/dinov3
+  model_name: dinov3_vitl16
+  # Use local weights by default to avoid torch.hub downloading in offline/restricted environments.
+  weights_path: weights/dinov3_vitl16_pretrain_lvd1689m-8aa4cbdd.pth
+  source: auto
+  patch_size: 16
+  download_online: false
+  return_layers: 1
+  use_norm: true
+  arch: dinov2_vitl14_reg4
+  use_adaptor: false
+  dino_weights_path: null
+  hid_dim: 384
+  d_model: 384
+  use_pos_encoding: false
+  use_trainable_residual: false
+coarse:
+  use_loftr_encoding: false
+  provide_coarse_ds_matrix: false
+  d_model: 256
+  use_pos_encoding: true
+  nhead: 8
+  layer_names:
+  - self
+  - cross
+  - self
+  - cross
+  - self
+  - cross
+  attention: linear
+dino_coarse:
+  d_model: 256
+use_self_encoder: false
+use_cross_encoder: false
+dino_encoder:
+  dim: 384
+  blocks_num: 2
+coarse_encoder:
+  d_model: 256
+  d_ffn: 256
+  nhead: 8
+  attention: full
+  layer_num: 4
+dino_cross_encoder:
+  d_model: 384
+  d_ffn: 384
+  nhead: 8
+  attention: full
+  layer_num: 4
+coarse_self_cross_encoder:
+  d_model: 256
+  d_ffn: 256
+  nhead: 8
+  attention: full
+  layer_num: 4
+dino_decoder:
+  d_model: 768
+  d_ffn: 768
+  nhead: 8
+  attention: full
+  layer_num: 5
+coarse_decoder:
+  d_model: 256
+  d_ffn: 256
+  nhead: 8
+  attention: full
+  layer_num: 6
+cls_decoder:
+  num_classes: 4096
+coarsematching_cls:
+  tbd: null
+temporal_fusion_conv8x:
+  layers_name:
+  - temporal_attn
+  temporal_attn:
+    use_detached_memory: false
+    bank_attn:
+      layer_names:
+      - cross
+      d_model: 256
+      d_ffn: 256
+      nhead: 8
+      attention: full
+    new_coarse:
+      layer_names:
+      - self
+      - cross
+      d_model: 256
+      d_ffn: 256
+      nhead: 8
+      attention: linear
+  queries_attn:
+    layer_num: 3
+    sampled_num: 8
+    max_pe_length: 9
+    replace_rate: 0
+    queries_attn:
+      layer_num: 2
+      d_model: 256
+      d_ffn: 256
+      nhead: 8
+      attention: linear
+    final_attn:
+      layer_names:
+      - cross
+      d_model: 256
+      d_ffn: 256
+      nhead: 8
+      attention: linear
+    historical_attn:
+      layer_names:
+      - cross
+      d_model: 256
+      d_ffn: 256
+      nhead: 8
+      attention: full
+temporal_fusion_dino:
+  layers_name:
+  - temporal_attn
+  temporal_attn:
+    use_detached_memory: true
+    bank_attn:
+      layer_names:
+      - cross
+      d_model: 384
+      d_ffn: 384
+      nhead: 8
+      attention: full
+    new_coarse:
+      layer_names:
+      - self
+      - cross
+      d_model: 384
+      d_ffn: 384
+      nhead: 8
+      attention: linear
+  queries_attn:
+    layer_num: 1
+    sampled_num: 8
+    max_pe_length: 9
+    replace_rate: 0
+    queries_attn:
+      layer_num: 1
+      d_model: 384
+      d_ffn: 384
+      nhead: 8
+      attention: linear
+    final_attn:
+      layer_names:
+      - cross
+      d_model: 384
+      d_ffn: 384
+      nhead: 8
+      attention: linear
+    historical_attn:
+      layer_names:
+      - cross
+      d_model: 384
+      d_ffn: 384
+      nhead: 8
+      attention: linear
+memory_manager:
+  sample_method: foremost
+  max_memory_size: 8
+match_coarse:
+  thr: 0.2
+  border_rm: 2
+  match_type: dual_softmax
+  dsmax_temperature: 0.1
+fine:
+  d_model: 128
+pips_refinement:
+  window_size: 5
+  use_randomwalk: true
+  use_patch_cross_attn: false
+  use_abs_pos_pe: false
+  jitter_aug: false
+  jitter_list:
+  - 0.03
+  - 0.015
+  - 0.0075
+  fine_dims: null
+  pass_info_between_lvls: true
+  hidden_dims: 384
+  pips_iter_num: 3
+  corr_num_levels: 3
+  corr_radius: 3
+  causal_context_num: 11
+  causal_memory_size: 24
+  augment_config:
+    p_augment: 0
+    p_zero_mask: 0
+    p_replace_mask: 0
+    use_patch_erase_aug: false
+    patch_erase_p: 0
+    use_prior_jitter_aug: false
+  flow_dim: 0
+  pe_dim: 64
+  troma_blocks:
+    troma_16x:
+      block_type: base
+      nhead: 8
+      layer_num: 4
+      shared_kv: false
+    troma_8x:
+      block_type: base
+      nhead: 8
+      layer_num: 2
+      shared_kv: false
+    troma_2x:
+      block_type: base
+      nhead: 8
+      layer_num: 2
+      shared_kv: false
+    flow_decoder:
+      out_features: 4
+    affinity_decoder:
+      hidden_features: 256
+    patch_pe:
+      new_pe_dim: 64
+occ_thresh: 0.3

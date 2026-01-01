@@ -1,0 +1,55 @@
+# Streaming Video Simulation Configuration
+# Simulate real-time streaming from a video file
+
+source:
+  source_type: video_file
+  video_path: null  # Specify via command line
+  simulate_realtime: true  # Simulate real-time playback
+  target_fps: 30.0  # Target FPS for simulation
+  resized_wh: [512, 384]
+  auto_rotate: true
+  skip_frames: 0
+
+processing:
+  mode: global
+  max_points: 500
+
+model:
+  # Required. Download a checkpoint (see docs/MODEL_ZOO.md) and place it here,
+  # or override with `--ckpt_path ...`.
+  ckpt_path: null  # Required: specify via --ckpt_path or download from releases
+  # Faster cold-start by skipping DINOv3 hub weight loading.
+  fast_start: true
+  interp_shape: [512, 512]
+  dtype: fp16
+  device: cuda
+  use_amp: true
+  tracking_visibility_threshold: 0.1
+  matching_visibility_threshold: 0.5
+
+query:
+  strategy: grid
+  grid_size: 20
+  initial_frame: 0
+  use_mask_filter: false
+
+visualization:
+  show_live: true
+  window_name: "Video Streaming Simulation"
+  display_fps: true
+  display_info: true
+  record_output: true  # Record the output
+  output_path: null  # Auto-generate path
+  linewidth: 2
+  point_radius: 3
+  tracks_leave_trace: 5
+  colormap: jet
+  alpha: 0.7
+
+output:
+  output_dir: "./outputs/streaming/video"
+  save_video: false
+  save_npz: false
+
+max_duration: null  # Process entire video
+verbose: true

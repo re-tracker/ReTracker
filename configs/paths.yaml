@@ -1,0 +1,79 @@
+# =============================================================================
+# Path Configuration Template
+# =============================================================================
+# This file defines base paths that are used across all config files.
+# To customize for your machine:
+#   1. Copy this file to `configs/paths_local.yaml`
+#   2. Modify the paths in paths_local.yaml to match your setup
+#   3. paths_local.yaml is gitignored and won't be committed
+#
+# The paths_local.yaml will be automatically loaded and merged.
+# If paths_local.yaml doesn't exist, these defaults will be used.
+# =============================================================================
+
+paths:
+  # ===== Data Directories =====
+  # Root directory for training data (MegaDepth, ScanNet, etc.)
+  #
+  # By default we assume datasets live under the repo-local `data/` folder.
+  # For real training runs, create `configs/paths_local.yaml` and override these
+  # paths to point at your dataset storage.
+  DATA_ROOT: "data"
+
+  # Alternative data root (some datasets may be on different storage)
+  DATA_ROOT_ALT: "${paths.DATA_ROOT}"
+
+  # MegaDepth dataset indices
+  MEGADEPTH_INDEX_ROOT: "${paths.DATA_ROOT}/megadepth/indexs/megadepth_indices"
+
+  # ScanNet dataset root
+  SCANNET_ROOT: "${paths.DATA_ROOT}/scannet_plus"
+
+  # Video datasets root (for flyingthings, kubrics, pointodyssey, etc.)
+  VIDEO_DATA_ROOT: "${paths.DATA_ROOT}"
+
+  # ===== Evaluation / Inference Data =====
+  # Keep evaluation inputs separate from training inputs to avoid accidental coupling.
+  # By default, evaluation reads from the same `data/` tree.
+  EVAL_DATA_ROOT: "${paths.DATA_ROOT}"
+
+  # TAP-Vid root. Expected layout (examples):
+  # - ${paths.TAPVID_ROOT}/tapvid_davis/tapvid_davis.pkl
+  # - ${paths.TAPVID_ROOT}/tapvid_robotap/robotap_split*.pkl
+  # - ${paths.TAPVID_ROOT}/rgb_stacking/tapvid_rgb_stacking/tapvid_rgb_stacking.pkl
+  #
+  # For open-source / smoke tests, we ship a tiny TAP-Vid DAVIS subset under:
+  #   data/tapvid_local/tapvid_davis/tapvid_davis.pkl
+  #
+  # For the full TAP-Vid datasets, override this in `configs/paths_local.yaml` to point at
+  # your dataset storage.
+  TAPVID_ROOT: "${paths.EVAL_DATA_ROOT}/tapvid_local"
+
+  # ===== Model Weights =====
+  # Directory containing pretrained model weights
+  WEIGHTS_ROOT: "weights"
+
+  # DINOv3 weights path
+  #
+  # By default we point at a local file under `weights/` so runs can be fully offline
+  # (assuming you have placed/downloaded the weights there).
+  # Set this to null if you want torch.hub to download weights automatically.
+  DINOV3_WEIGHTS: "${paths.WEIGHTS_ROOT}/dinov3_vitl16_pretrain_lvd1689m-8aa4cbdd.pth"
+
+  # DINOv3 local repo (for torch.hub)
+  # Set to local path if using offline mode, otherwise use 'auto' to download from github.
+  # Example (auto download):
+  #   DINOV3_WEIGHTS: null
+  #   DINOV3_REPO: "auto"
+  DINOV3_REPO: "auto"
+
+  # Pretrained ReTracker checkpoint (null to train from scratch)
+  PRETRAINED_CKPT: null
+
+  # ===== Output Directories =====
+  # Training outputs (checkpoints, logs)
+  OUTPUTS_ROOT: "./outputs"
+
+  # Optional convenience paths (keep train/eval separate).
+  TRAIN_OUTPUTS_ROOT: "${paths.OUTPUTS_ROOT}/training"
+  EVAL_OUTPUTS_ROOT: "${paths.OUTPUTS_ROOT}/eval"

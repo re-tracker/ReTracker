@@ -1,0 +1,8 @@
+# Downloaded app assets (example videos, etc.) are cached here at runtime.
+#
+# Keep this directory in git so tools can rely on the path existing, but avoid
+# committing large binaries.
+*
+!.gitignore
+!README.md
+
